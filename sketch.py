@@ -14,13 +14,14 @@ DATASET_DIR = "data/raw"
 PATCHES_DIR = "data/patches"
 OUTPUTS_DIR = "outputs"
 
-EPOCHS = 20
+EPOCHS = 5
 LEARNING_RATE = 1e-4
 BATCH_SIZE = 64
 LATENT_DIM = 64
 BETA = 0.001
+PATCHES_PER_IMAGE = 10
 
-def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = 64, patches_per_image: int = 20):
+def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = 64, patches_per_image: int = PATCHES_PER_IMAGE):
     """Crops random square patches from raw natural images."""
     raw_dir, patches_dir = Path(raw_dir), Path(patches_dir)
     patches_dir.mkdir(parents=True, exist_ok=True)
@@ -212,13 +213,13 @@ def train():
 
 def main():
     make_patches()
-    train()
-    generate_samples(
-        checkpoint="outputs/vae_texture.pt",
-        sample_dir="outputs/samples",
-        latent_dim=LATENT_DIM,
-        num_samples=16
-    )
+    # train()
+    # generate_samples(
+    #     checkpoint="outputs/vae_texture.pt",
+    #     sample_dir="outputs/samples",
+    #     latent_dim=LATENT_DIM,
+    #     num_samples=16
+    # )
 
 if __name__ == "__main__":
     main()
