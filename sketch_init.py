@@ -18,7 +18,7 @@ OUTPUTS_DIR = f"outputs/{RUN_NAME}"
 CHECKPOINT_PATH = f"{OUTPUTS_DIR}/vae_init.pt"
 SAMPLE_DIR = f"{OUTPUTS_DIR}/samples"
 
-EPOCHS = 6
+EPOCHS = 35
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 64
 LATENT_DIM = 128
@@ -191,7 +191,7 @@ def train(image_dir=RAW_IMG_DIR, image_size=IMAGE_SIZE, batch_size=BATCH_SIZE, l
 
     Path(outputs_dir).mkdir(parents=True, exist_ok=True)
     Path(SAMPLE_DIR).mkdir(parents=True, exist_ok=True)
-    for epoch in range(29, 29 + num_epochs):
+    for epoch in range(num_epochs):
         model.train()
 
         loop = tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
