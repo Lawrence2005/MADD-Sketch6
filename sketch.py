@@ -168,25 +168,25 @@ def generate_samples(checkpoint='outputs/vae_nature.pt', sample_dir="outputs/sam
     save_path = Path(sample_dir) / "generated_samples.png"
     utils.save_image(samples, save_path, nrow=4)
 
-def train():
+def train(image_dir=DATASET_DIR, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM, learning_rate=LEARNING_RATE, num_epochs=EPOCHS, beta=BETA, outputs_dir=OUTPUTS_DIR):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset = NatureDataset(image_dir=DATASET_DIR, image_size=64)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    dataset = NatureDataset(image_dir=image_dir, image_size=64)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    model = VAE(latent_dim=LATENT_DIM).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    model = VAE(latent_dim=latent_dim).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    Path(OUTPUTS_DIR).mkdir(parents=True, exist_ok=True)
-    for epoch in range(EPOCHS):
+    Path(outputs_dir).mkdir(parents=True, exist_ok=True)
+    for epoch in range(num_epochs):
         model.train()
 
-        loop = tqdm(dataloader, desc=f"Epoch {epoch+1}/{EPOCHS}")
+        loop = tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
         for x in loop:
             x = x.to(device)
 
             recon_batch, mu, logvar = model(x)
-            loss, recon_loss, kl_loss = vae_loss(recon_batch, x, mu, logvar, beta=BETA)
+            loss, recon_loss, kl_loss = vae_loss(recon_batch, x, mu, logvar, beta=beta)
 
             optimizer.zero_grad()
             loss.backward()
@@ -198,34 +198,34 @@ def train():
                 "kl": kl_loss.item()
             })
         
-        ckpt_path = Path(OUTPUTS_DIR) / "vae_nature.pt"
+        ckpt_path = Path(outputs_dir) / "vae_nature.pt"
         torch.save(model.state_dict(), ckpt_path)
 
-        save_reconstructions(model, dataloader, device, save_path=Path(OUTPUTS_DIR) / f"recon_epoch_{epoch+1:03d}.png")
+        save_reconstructions(model, dataloader, device, save_path=Path(outputs_dir) / f"recon_epoch_{epoch+1:03d}.png")
 
         model.eval()
 
         with torch.no_grad():
-            z = torch.randn(16, LATENT_DIM).to(device)
+            z = torch.randn(16, latent_dim).to(device)
             samples = model.decode(z)
 
             utils.save_image(
                 samples,
-                Path(OUTPUTS_DIR) / f"samples_epoch_{epoch + 1:03d}.png",
+                Path(outputs_dir) / f"samples_epoch_{epoch + 1:03d}.png",
                 nrow=4
             )
 
 def main():
-    make_patches()
+    # make_patches()
 
-    # train()
+    train()
 
-    # generate_samples(
-    #     checkpoint="outputs/vae_nature.pt",
-    #     sample_dir="outputs/samples",
-    #     latent_dim=LATENT_DIM,
-    #     num_samples=16
-    # )
+    generate_samples(
+        checkpoint="outputs/vae_nature.pt",
+        sample_dir="outputs/samples",
+        latent_dim=LATENT_DIM,
+        num_samples=16
+    )
 
 if __name__ == "__main__":
     main()
