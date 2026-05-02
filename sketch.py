@@ -10,7 +10,7 @@ from torchvision import transforms, utils
 from PIL import Image
 from tqdm import tqdm
 
-DATASET_DIR = "data/raw"
+RAW_IMG_DIR = "data/raw"
 PATCHES_DIR = "data/patches"
 OUTPUTS_DIR = "outputs"
 
@@ -22,7 +22,7 @@ BETA = 0.001
 PATCH_SIZE = 128
 PATCHES_PER_IMAGE = 8
 
-def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = PATCH_SIZE, patches_per_image: int = PATCHES_PER_IMAGE):
+def make_patches(raw_dir: str = RAW_IMG_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = PATCH_SIZE, patches_per_image: int = PATCHES_PER_IMAGE):
     """Crops random square patches from raw natural images."""
     raw_dir, patches_dir = Path(raw_dir), Path(patches_dir)
     patches_dir.mkdir(parents=True, exist_ok=True)
@@ -168,7 +168,7 @@ def generate_samples(checkpoint='outputs/vae_nature.pt', sample_dir="outputs/sam
     save_path = Path(sample_dir) / "generated_samples.png"
     utils.save_image(samples, save_path, nrow=4)
 
-def train(image_dir=DATASET_DIR, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM, learning_rate=LEARNING_RATE, num_epochs=EPOCHS, beta=BETA, outputs_dir=OUTPUTS_DIR):
+def train(image_dir=RAW_IMG_DIR, batch_size=BATCH_SIZE, latent_dim=LATENT_DIM, learning_rate=LEARNING_RATE, num_epochs=EPOCHS, beta=BETA, outputs_dir=OUTPUTS_DIR):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     dataset = NatureDataset(image_dir=image_dir, image_size=64)
