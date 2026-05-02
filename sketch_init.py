@@ -18,14 +18,14 @@ OUTPUTS_DIR = f"outputs/{RUN_NAME}"
 CHECKPOINT_PATH = f"{OUTPUTS_DIR}/vae_init.pt"
 SAMPLE_DIR = f"{OUTPUTS_DIR}/samples"
 
-EPOCHS = 10
+EPOCHS = 6
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 64
-LATENT_DIM = 32
+LATENT_DIM = 128
 BETA = 0.0001
 PATCH_SIZE = 128
 PATCHES_PER_IMAGE = 8
-IMAGE_SIZE = 64
+IMAGE_SIZE = 128
 
 def make_patches(raw_dir: str = RAW_IMG_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = PATCH_SIZE, patches_per_image: int = PATCHES_PER_IMAGE):
     """Crops random square patches from raw natural images."""
@@ -191,7 +191,7 @@ def train(image_dir=RAW_IMG_DIR, image_size=IMAGE_SIZE, batch_size=BATCH_SIZE, l
 
     Path(outputs_dir).mkdir(parents=True, exist_ok=True)
     Path(SAMPLE_DIR).mkdir(parents=True, exist_ok=True)
-    for epoch in range(15, 15 + num_epochs):
+    for epoch in range(29, 29 + num_epochs):
         model.train()
 
         loop = tqdm(dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
