@@ -19,9 +19,10 @@ LEARNING_RATE = 1e-4
 BATCH_SIZE = 64
 LATENT_DIM = 64
 BETA = 0.001
-PATCHES_PER_IMAGE = 10
+PATCH_SIZE = 128
+PATCHES_PER_IMAGE = 8
 
-def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = 64, patches_per_image: int = PATCHES_PER_IMAGE):
+def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, patch_size: int = PATCH_SIZE, patches_per_image: int = PATCHES_PER_IMAGE):
     """Crops random square patches from raw natural images."""
     raw_dir, patches_dir = Path(raw_dir), Path(patches_dir)
     patches_dir.mkdir(parents=True, exist_ok=True)
@@ -30,6 +31,7 @@ def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, pat
         try:
             img = Image.open(img_path).convert("RGB")
         except Exception as e:
+            print(f"Error loading {img_path}: {e}")
             continue
 
         w, h  = img.size
@@ -43,10 +45,10 @@ def make_patches(raw_dir: str = DATASET_DIR, patches_dir: str = PATCHES_DIR, pat
             patch = img.crop((x, y, x + patch_size, y + patch_size))
             patch.save(patches_dir / f"{img_path.stem}_{x}_{y}.jpg")
 
-class TextureDataset(Dataset):
-    def __init__(self, image_dir="data/patches", image_size=64):
+class NatureDataset(Dataset):
+    def __init__(self, image_dir="data/raw", image_size=64):
         image_dir = Path(image_dir)
-        self.image_paths = list(Path(image_dir).glob("*.jpg"))
+        self.image_paths = list(image_dir.glob("*.jpg"))
         if len(self.image_paths) == 0:
             raise ValueError(f"No .jpg images found in {image_dir}")
 
@@ -55,12 +57,13 @@ class TextureDataset(Dataset):
             transforms.ToTensor(),
         ])
 
+        print(f"Loaded {len(self.image_paths)} landscape images from {image_dir}")
+
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, idx):
         image = Image.open(self.image_paths[idx]).convert("RGB")
-
         return self.transform(image)
 
 class VAE(nn.Module):
@@ -149,7 +152,8 @@ def save_reconstructions(model, dataloader, device, save_path: str):
     utils.save_image(grid, save_path, nrow=8)
 
 @torch.no_grad()
-def generate_samples(checkpoint='outputs/vae_texture.pt', sample_dir="outputs/samples", latent_dim=LATENT_DIM, num_samples=16):
+def generate_samples(checkpoint='outputs/vae_nature.pt', sample_dir="outputs/samples", latent_dim=LATENT_DIM, num_samples=16):
+    """Generates new nature samples by sampling from the latent space of a trained VAE."""
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     model = VAE(latent_dim=latent_dim).to(device)
@@ -167,7 +171,7 @@ def generate_samples(checkpoint='outputs/vae_texture.pt', sample_dir="outputs/sa
 def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dataset = TextureDataset(image_dir=PATCHES_DIR, image_size=64)
+    dataset = NatureDataset(image_dir=DATASET_DIR, image_size=64)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     model = VAE(latent_dim=LATENT_DIM).to(device)
@@ -194,7 +198,7 @@ def train():
                 "kl": kl_loss.item()
             })
         
-        ckpt_path = Path(OUTPUTS_DIR) / "vae_texture.pt"
+        ckpt_path = Path(OUTPUTS_DIR) / "vae_nature.pt"
         torch.save(model.state_dict(), ckpt_path)
 
         save_reconstructions(model, dataloader, device, save_path=Path(OUTPUTS_DIR) / f"recon_epoch_{epoch+1:03d}.png")
@@ -213,9 +217,11 @@ def train():
 
 def main():
     make_patches()
+
     # train()
+
     # generate_samples(
-    #     checkpoint="outputs/vae_texture.pt",
+    #     checkpoint="outputs/vae_nature.pt",
     #     sample_dir="outputs/samples",
     #     latent_dim=LATENT_DIM,
     #     num_samples=16

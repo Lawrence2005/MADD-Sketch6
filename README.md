@@ -1,1 +1,9 @@
-# MADD-Sketch6
+# MADD 26210 Sketch 6
+
+I wanted to explore the digital production of seemingly natural beings through machine learning. I trained a Variational Autoencoder on small image patches taken from natural landscape photographs, such as mountains, trails, or organic surfaces. Instead of manually drawing a natural form, the model learns visual patterns from the dataset and tries to generate new texture-like images from its latent space.
+
+The training of the model is unsupervised, which means I did not need labels for the images. The model simply learns by trying to reconstruct the input patches. This was useful because the goal was not classification, but learning the general visual structure of natural surfaces: color, softness, texture, and repeated patterns.
+
+One challenge was training time. Even a simple VAE can become slow when the dataset contains many cropped patches. I had to think about batch size, number of epochs, and how many patches to create from each raw image. After the first epoch, the generated samples were still blurry, but they already showed some color and texture patterns. This helped me understand that machine learning generation is gradual: the model first learns broad visual statistics before it learns sharper details.
+
+The final images look somewhat like natural material, but they come from compression, randomness, and neural network reconstruction. The “natural” result is not found directly in the world; it is produced by a digital system that has learned from examples of nature. This creates an interesting tension between organic appearance and computational origin.S
